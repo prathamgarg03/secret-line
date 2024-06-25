@@ -20,7 +20,7 @@ export async function GET(request: Request) {
             const usernameErrors = result.error.format().username?._errors || []
             return Response.json({
                 success: false,
-                message: usernameErrors?.length > 0 ? usernameErrors.join(',') : "Inavlid query parameters"
+                message: usernameErrors?.length > 0 ? usernameErrors.join(', ') : "Inavlid query parameters"
             }, { status: 400 })
         }
 
