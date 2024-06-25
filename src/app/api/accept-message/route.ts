@@ -3,6 +3,7 @@ import { authOptions } from "../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 import { User } from "next-auth";
+import mongoose from "mongoose";
 
 export async function POST(request: Request) {
     await dbConnect()
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
         }, { status: 401 })
     }
 
-    const userId = user._id
+    const userId = new mongoose.Types.ObjectId(user._id)
     const {acceptMessage} = await request.json()
     try {
         const updatedUser = await UserModel.findByIdAndUpdate(
@@ -61,7 +62,7 @@ export async function GET(request: Request) {
         }, { status: 401 })
     }
 
-    const userId = user._id
+    const userId = new mongoose.Types.ObjectId(user._id)
     try {
         const foundUser = await UserModel.findById(userId)
 
