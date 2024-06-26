@@ -5,7 +5,7 @@ import { verifySchema } from "@/schemas/verifySchema";
 
 
 const VerifyQuerySchema = z.object({
-    code: verifySchema
+    code: z.string().length(6, 'Verification code must be 6 digits'),
 })
 
 export async function POST(request: Request) {
