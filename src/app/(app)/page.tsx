@@ -1,61 +1,58 @@
-'use client'
+'use client';
+
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel"
-import Autoplay from 'embla-carousel-autoplay'
-import messages from '@/messages.json'
+} from "@/components/ui/carousel";
+import Autoplay from 'embla-carousel-autoplay';
+import messages from '@/messages.json';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Mail } from "lucide-react";
 
 export default function Home() {
   return (
     <>
-      <main className="flex flex-grow flex-col items-center justify-center px-4 md:px-24 py-12">
+      <main className="flex flex-grow flex-col items-center justify-center px-4 md:px-24 py-12 bg-gray-50">
         <section className="text-center mb-8 md:mb-12">
-          <h1 className="text-3xl md:text-5xl font-bold">
-            Dive into the world of anonymous conversations
+          <h1 className="text-4xl md:text-6xl font-extrabold text-gray-800">
+            Dive into the World of Anonymous Conversations
           </h1>
-          <p className="mt-3 md:mt-4 text-base md:text-lg">
-            Explore Secret Line - where identity remians a secret
+          <p className="mt-4 md:mt-6 text-lg md:text-xl text-gray-600">
+            Explore Secret Line - where identity remains a secret
           </p>
         </section>
-        <section className="items-center">
-          <Carousel
-            plugins={[Autoplay({ delay: 2000 })]}
-            className="w-full max-w-xs">
+        <section className="w-full max-w-3xl">
+          <Carousel plugins={[Autoplay({ delay: 3000 })]} className="w-full">
             <CarouselContent>
               {messages.map((message, index) => (
                 <CarouselItem key={index} className="p-4">
-                  <Card>
-                    <CardHeader>
+                  <Card className="shadow-lg">
+                    <CardHeader className="font-semibold text-lg text-gray-700">
                       {message.title}
                     </CardHeader>
-                    <CardContent className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 md:space-x-4">
-                      <Mail className="flex-shrink-0 mt-1" />
+                    <CardContent className="flex flex-col md:flex-row items-start space-y-4 md:space-y-0 md:space-x-6">
+                      <Mail className="flex-shrink-0 text-gray-500 w-6 h-6" />
                       <div>
-                        <p>{message.content}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-gray-600">{message.content}</p>
+                        <p className="text-xs text-gray-400 mt-2">
                           {message.received}
                         </p>
                       </div>
                     </CardContent>
                   </Card>
                 </CarouselItem>
-              ))
-
-              }
+              ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
+            <CarouselPrevious className="text-gray-500 hover:text-gray-700" />
+            <CarouselNext className="text-gray-500 hover:text-gray-700" />
           </Carousel>
         </section>
       </main>
-      <footer>
-
+      <footer className="mt-12 w-full text-center py-4 bg-gray-100">
+        <p className="text-sm text-gray-500">© 2024 Secret Line. All rights reserved.</p>
       </footer>
     </>
   );
