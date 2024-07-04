@@ -166,21 +166,6 @@ function Dashboard() {
           <RefreshCcw className="h-4 w-4" />
         )}
       </Button>
-      {/* <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-        {messages.length > 0 ? (
-          messages.map((message, index) => (
-            <MessageCard
-              key={message._id as string}
-              message={message}
-              onMessageDelete={handleDeleteMessage}
-            />
-          ))
-        ) : (
-          <p>No messages to display.</p>
-        )}
-      </div> */}
-
-
       <div className="container mx-auto py-10">
         <MessageTable data={messages} onMessageDelete={handleDeleteMessage}/>
       </div>

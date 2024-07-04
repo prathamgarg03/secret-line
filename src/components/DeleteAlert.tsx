@@ -24,9 +24,10 @@ type DeleteAlertProp = {
   onMessageDelete: (messageId: string) => void
 }
 
-export function Alert({ message, onMessageDelete }: DeleteAlertProp) {
+export function Alert({ message, messages, onMessageDelete }: DeleteAlertProp) {
+
   const { toast } = useToast()
-  const handleDeleteConfirm = async () => {
+  const deleteMessage = async () => {
     try {
       if (message) {
         const response = await axios.delete<ApiResponse>(`/api/delete-message/${message._id}`)
@@ -35,6 +36,34 @@ export function Alert({ message, onMessageDelete }: DeleteAlertProp) {
         })
         const messageId = message._id as string
         onMessageDelete(messageId)
+      }
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse>;
+      toast({
+        title: 'Error',
+        description:
+          axiosError.response?.data.message ?? 'Failed to delete message',
+        variant: 'destructive',
+      });
+    }
+  }
+
+  const deleteMessages = async () => {
+    try {
+      if (messages) {
+        const messageIds = messages.map(message => message._id)
+        
+        const response = await axios.delete<ApiResponse>('/api/delete-messages', {
+          data: {messageIds: messageIds}
+        })
+        toast({
+          title: response.data.message
+        })
+
+        for(const messageId of messageIds) {
+          console.log('delete: ', messageId)
+          onMessageDelete(messageId as string)
+        }
       }
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
@@ -63,7 +92,13 @@ export function Alert({ message, onMessageDelete }: DeleteAlertProp) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDeleteConfirm}>Continue</AlertDialogAction>
+          {message &&
+            <AlertDialogAction onClick={deleteMessage}>Continue</AlertDialogAction>
+          }
+          {
+            messages &&
+            <AlertDialogAction onClick={deleteMessages}>Continue</AlertDialogAction>
+          }
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

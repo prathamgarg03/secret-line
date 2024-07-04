@@ -10,6 +10,7 @@ import {
     getSortedRowModel,
     ColumnFiltersState,
     getFilteredRowModel,
+    Row,
 } from "@tanstack/react-table"
 import {
     Table,
@@ -20,7 +21,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Alert } from './DeleteAlert'
-import { MoreHorizontal, ReplyIcon, ArrowUpDown } from "lucide-react"
+import { MoreHorizontal, ReplyIcon, ArrowUpDown, Trash2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -31,6 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from './ui/input'
 import { Checkbox } from './ui/checkbox'
+import { CheckedState } from '@radix-ui/react-checkbox'
 type MessageTableProp = {
     data: Message[]
     onMessageDelete: (messageId: string) => void
@@ -44,6 +46,17 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
     });
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
     const [rowSelection, setRowSelection] = useState({})
+    const [selectedMessages, setSelectedMessages] = useState<Message[]>([]);
+
+    const handleSelectionChange = (row: Row<Message>, isSelected: CheckedState) => {
+        setSelectedMessages((prevSelectedMessages) => {
+            if (isSelected) {
+                return [...prevSelectedMessages, row.original]
+            } else {
+                return prevSelectedMessages.filter((message) => message.id !== row.original.id)
+            }
+        });
+    }
     const columns: ColumnDef<Message>[] = [
         {
             id: "select",
@@ -60,7 +73,11 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
             cell: ({ row }) => (
                 <Checkbox
                     checked={row.getIsSelected()}
-                    onCheckedChange={(value) => row.toggleSelected(!!value)}
+                    onCheckedChange={
+                        (value) => {
+                            row.toggleSelected(!!value)
+                            handleSelectionChange(row, !!value)
+                        }}
                     aria-label="Select row"
                 />
             ),
@@ -85,13 +102,15 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
             accessorKey: "createdAt",
             header: ({ column }) => {
                 return (
-                    <Button
-                        variant="ghost"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        Received
-                        <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
+                    <div className='text-right'>
+                        <Button
+                            variant="ghost"
+                            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                        >
+                            Received
+                            <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                    </div>
                 )
             },
             cell: ({ row }) => {
@@ -105,7 +124,7 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
                         second: 'numeric',
                         hour12: true
                     })
-                return <div>{dateString}</div>
+                return <div className="text-right">{dateString}</div>
             }
         },
         {
@@ -145,7 +164,6 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
         onPaginationChange: setPagination,
-        autoResetPageIndex: false,
         onRowSelectionChange: setRowSelection,
         state: {
             sorting,
@@ -157,15 +175,21 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
 
     return (
         <div>
-            <div className="flex items-center py-4">
+
+            <div className="flex flex-row items-center py-4 gap-2">
                 <Input
                     placeholder="Search messages..."
                     value={(table.getColumn("content")?.getFilterValue() as string) ?? ""}
                     onChange={(event) =>
                         table.getColumn("content")?.setFilterValue(event.target.value)
                     }
-                    className="max-w-sm"
+                    className="flex-1 max-w-sm"
                 />
+                <div className='ml-auto'>
+                    {table.getFilteredSelectedRowModel().rows.length > 0 && 
+                        <Alert messages={selectedMessages} onMessageDelete={onMessageDelete}/>
+                    }
+                </div>
             </div>
             <div className="rounded-md border">
                 <Table>
@@ -204,7 +228,7 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No results.
+                                    No Messages
                                 </TableCell>
                             </TableRow>
                         )}
@@ -214,7 +238,7 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
             <div className='flex'>
                 <div className="flex-1 text-sm text-muted-foreground mt-1">
                     {table.getFilteredSelectedRowModel().rows.length} of{" "}
-                    {table.getFilteredRowModel().rows.length} row(s) selected.
+                    {table.getFilteredRowModel().rows.length} message(s) selected.
                 </div>
                 <div className="flex items-center justify-end space-x-2 py-4">
                     <Button
