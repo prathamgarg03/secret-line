@@ -129,6 +129,7 @@ function Dashboard() {
         <h2 className="text-lg font-semibold mb-2">Copy Your Unique Link</h2>{' '}
         <div className="flex items-center">
           <input
+          id='url'
             type="text"
             value={profileUrl}
             disabled
@@ -140,7 +141,7 @@ function Dashboard() {
 
       <div className="mb-4">
         <Switch
-          {...register('acceptMessages')}
+          {...register('acceptMessage')}
           checked={acceptMessage}
           onCheckedChange={handleSwitchChange}
           disabled={isSwitchLoading}
