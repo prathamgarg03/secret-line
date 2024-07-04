@@ -1,12 +1,14 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/options";
+import { authOptions } from "../../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 import { User } from "next-auth";
 import mongoose from "mongoose";
 import { Message } from "@/model/User";
 
-export async function GET(request: Request) {
+export async function DELETE(request: Request, {params}: 
+{params: {messageid: string}}) {
+    const messageId = params.messageid
     await dbConnect()
 
     const session = await getServerSession(authOptions)
@@ -19,43 +21,32 @@ export async function GET(request: Request) {
         }, { status: 401 })
     }
 
-    const userId = new mongoose.Types.ObjectId(user._id)
-
     try {
-        const user = await UserModel.aggregate([
+        const upadatedResult = await UserModel.updateOne(
             {
-                $match: {
-                    _id: userId
-                }
-            }, 
-            {
-                $unwind: "$messages"
+              _id: user._id
             },
             {
-                $sort: {"messages.createdAt": -1}
-            },
-            {
-                $group: {
-                    _id: "$_id",
-                    messages: {$push: "$messages"}
+                $pull: {
+                    messages: {_id: messageId}
                 }
             }
-        ])
-        if(!user || user.length === 0) {
+        )
+        if(upadatedResult.modifiedCount === 0) {
             return Response.json({
                 success: false,
-                message: "User not found"
+                message: "Message not found or already deleted"
             }, { status: 404 })
         }
         return Response.json({
             success: true,
-            messages: user[0].messages
+            message: "Message deleted successfully"
         }, { status: 200 })
-
-    } catch (error) {
+    } catch(error) {
         return Response.json({
             success: false,
-            message: "Error fetching messages"
+            message: "Error deleting message"
         }, { status: 500 })
     }
+
 }
