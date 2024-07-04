@@ -4,14 +4,15 @@ import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 import { User } from "next-auth";
 import mongoose from "mongoose";
+import { Message } from "@/model/User";
 
 export async function GET(request: Request) {
     await dbConnect()
 
     const session = await getServerSession(authOptions)
     const user: User = session?.user as User
-
-    if(!session || !session.user) {
+    console.log(user)
+    if (!session || !user) {
         return Response.json({
             success: false,
             message: "Not Authenticated"
@@ -24,7 +25,7 @@ export async function GET(request: Request) {
         const user = await UserModel.aggregate([
             {
                 $match: {
-                    id: userId
+                    _id: userId
                 }
             }, 
             {
@@ -44,7 +45,7 @@ export async function GET(request: Request) {
             return Response.json({
                 success: false,
                 message: "User not found"
-            }, { status: 401 })
+            }, { status: 404 })
         }
         return Response.json({
             success: true,
