@@ -1,8 +1,6 @@
 import { z } from "zod";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
-import { verifySchema } from "@/schemas/verifySchema";
-
 
 const VerifyQuerySchema = z.object({
     code: z.string().length(6, 'Verification code must be 6 digits'),

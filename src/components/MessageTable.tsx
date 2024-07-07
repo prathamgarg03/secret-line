@@ -175,8 +175,7 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
 
     return (
         <div>
-
-            <div className="flex flex-row items-center py-4 gap-2">
+            <div className="flex flex-row py-4 gap-2">
                 <Input
                     placeholder="Search messages..."
                     value={(table.getColumn("content")?.getFilterValue() as string) ?? ""}

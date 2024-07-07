@@ -73,7 +73,7 @@ function ProfilePage() {
     });
 
     const onUsernameSubmit = (data: z.infer<typeof usernameSchema>) => {
-        console.log('Form submitted:', data);
+        console.log('Form submitted:', data)
     };
 
     return (
