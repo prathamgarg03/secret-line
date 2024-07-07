@@ -31,8 +31,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from './ui/input'
-import { Checkbox } from './ui/checkbox'
-import { CheckedState } from '@radix-ui/react-checkbox'
+
 type MessageTableProp = {
     data: Message[]
     onMessageDelete: (messageId: string) => void
@@ -45,45 +44,8 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
         pageSize: 5,
     });
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-    const [rowSelection, setRowSelection] = useState({})
-    const [selectedMessages, setSelectedMessages] = useState<Message[]>([]);
 
-    const handleSelectionChange = (row: Row<Message>, isSelected: CheckedState) => {
-        setSelectedMessages((prevSelectedMessages) => {
-            if (isSelected) {
-                return [...prevSelectedMessages, row.original]
-            } else {
-                return prevSelectedMessages.filter((message) => message.id !== row.original.id)
-            }
-        });
-    }
     const columns: ColumnDef<Message>[] = [
-        {
-            id: "select",
-            header: ({ table }) => (
-                <Checkbox
-                    checked={
-                        table.getIsAllPageRowsSelected() ||
-                        (table.getIsSomePageRowsSelected() && "indeterminate")
-                    }
-                    onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="Select all"
-                />
-            ),
-            cell: ({ row }) => (
-                <Checkbox
-                    checked={row.getIsSelected()}
-                    onCheckedChange={
-                        (value) => {
-                            row.toggleSelected(!!value)
-                            handleSelectionChange(row, !!value)
-                        }}
-                    aria-label="Select row"
-                />
-            ),
-            enableSorting: false,
-            enableHiding: false,
-        },
         {
             accessorKey: "content",
             header: ({ column }) => {
@@ -164,12 +126,10 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
         onPaginationChange: setPagination,
-        onRowSelectionChange: setRowSelection,
         state: {
             sorting,
             columnFilters,
             pagination,
-            rowSelection,
         },
     })
 
@@ -184,11 +144,6 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
                     }
                     className="flex-1 max-w-sm"
                 />
-                <div className='ml-auto'>
-                    {table.getFilteredSelectedRowModel().rows.length > 0 && 
-                        <Alert messages={selectedMessages} onMessageDelete={onMessageDelete}/>
-                    }
-                </div>
             </div>
             <div className="rounded-md border">
                 <Table>
