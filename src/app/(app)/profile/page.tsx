@@ -65,7 +65,7 @@ function ProfilePage() {
             }
         };
         checkUsernameUnique();
-    }, [username]);
+    }, [username, user?.username]);
 
     const usernameForm = useForm<z.infer<typeof usernameSchema>>({
         resolver: zodResolver(usernameSchema),
@@ -161,7 +161,7 @@ function ProfilePage() {
                         <CardHeader>
                             <CardTitle>Username</CardTitle>
                             <CardDescription>
-                                Change your username here. After saving, you'll be logged out.
+                                Change your username here. After saving, you&apos;ll be logged out.
                             </CardDescription>
                         </CardHeader>
                         <Form {...usernameForm}>
@@ -214,7 +214,7 @@ function ProfilePage() {
                         <CardHeader>
                             <CardTitle>Password</CardTitle>
                             <CardDescription>
-                                Change your password here. After saving, you'll be logged out.
+                                Change your username here. After saving, you&apos;ll be logged out.
                             </CardDescription>
                         </CardHeader>
                         <Form {...passwordForm}>
