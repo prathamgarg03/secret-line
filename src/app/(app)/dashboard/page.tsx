@@ -118,7 +118,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="my-8 mx-4 md:mx-8 lg:mx-auto p-1 sm:p-6 max-w-6xl">
+    <div className="my-0 mx-4 md:mx-8 md:my-8 lg:mx-auto p-1 sm:p-6 max-w-6xl">
       <h1 className="text-4xl font-bold mb-6 text-center sm:text-left">User Dashboard</h1>
 
       <div className="mb-6">
