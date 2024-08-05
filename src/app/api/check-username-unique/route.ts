@@ -8,14 +8,12 @@ const UsernameQuerySchema = z.object({
     username: usernameValidation
 })
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
     await dbConnect()
     try {
-        const {searchParams} = new URL(request.url)
-        const queryParam = {
-            username: searchParams.get('username')
-        }
-        const result = UsernameQuerySchema.safeParse(queryParam)
+        const { username } = await request.json();
+        
+        const result = UsernameQuerySchema.safeParse({ username });
         if(!result.success) {
             const usernameErrors = result.error.format().username?._errors || []
             return Response.json({
@@ -24,7 +22,7 @@ export async function GET(request: Request) {
             }, { status: 400 })
         }
 
-        const {username} = result.data
+
         const existingUsername = await UserModel.findOne({
             username,
             isVerified: true

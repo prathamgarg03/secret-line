@@ -52,20 +52,22 @@ function ProfilePage() {
                     setIsCheckingUsername(false);
                 } else {
                     try {
-                        const response = await axios.get(`/api/check-username-unique?username=${username}`);
-                        setUsernameMessage(response.data.message);
+                        const response = await axios.post('/api/check-username-unique', {
+                            username
+                        })
+                        setUsernameMessage(response.data.message)
 
                     } catch (error) {
                         const axiosError = error as AxiosError<ApiResponse>;
-                        setUsernameMessage(axiosError.response?.data.message ?? "Error checking username");
+                        setUsernameMessage(axiosError.response?.data.message ?? "Error checking username")
                     } finally {
-                        setIsCheckingUsername(false);
+                        setIsCheckingUsername(false)
                     }
                 }
             }
         };
-        checkUsernameUnique();
-    }, [username, user?.username]);
+        checkUsernameUnique()
+    }, [username, user?.username])
 
     const usernameForm = useForm<z.infer<typeof usernameSchema>>({
         resolver: zodResolver(usernameSchema),
@@ -188,7 +190,6 @@ function ProfilePage() {
                                                 <p className={`text-sm ${usernameMessage === "Username is unique" ? 'text-green-500' : 'text-red-500'}`}>
                                                     {usernameMessage}
                                                 </p>
-                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
