@@ -10,20 +10,20 @@ import {
 } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
     Tabs,
     TabsContent,
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs";
+import { toast } from "@/components/ui/use-toast";
 import { User } from "@/model/User";
-import { usernameSchema } from "@/schemas/signUpSchema";
+import { resetPasswordSchema, usernameSchema } from "@/schemas/signUpSchema";
 import { ApiResponse } from "@/types/ApiResponse";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios, { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDebounceCallback } from "usehooks-ts";
@@ -36,9 +36,11 @@ function ProfilePage() {
     const [username, setUsername] = useState("");
     const [usernameMessage, setUsernameMessage] = useState("");
     const [isCheckingUsername, setIsCheckingUsername] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isUsernameSubmitting, setIsUsernameSubmitting] = useState(false);
 
     const debounced = useDebounceCallback(setUsername, 300);
+
+    const [isPasswordSubmitting, setIsPasswordSumitting] = useState(false)
 
     useEffect(() => {
         const checkUsernameUnique = async () => {
@@ -65,16 +67,84 @@ function ProfilePage() {
         checkUsernameUnique();
     }, [username]);
 
-    const form = useForm<z.infer<typeof usernameSchema>>({
+    const usernameForm = useForm<z.infer<typeof usernameSchema>>({
         resolver: zodResolver(usernameSchema),
         defaultValues: {
             username: ''
         }
-    });
+    })
 
-    const onUsernameSubmit = (data: z.infer<typeof usernameSchema>) => {
-        console.log('Form submitted:', data)
-    };
+    const onUsernameSubmit = async (data: z.infer<typeof usernameSchema>) => {
+        const oldUsername = user?.username
+        const newUsername = data.username
+        setIsUsernameSubmitting(true)
+        try {
+            const response = await axios.post('/api/update-username', {
+                oldUsername,
+                newUsername
+            })
+            toast({
+                title: response.data.message,
+                variant: 'default',
+            })
+            toast({
+                title: "Please sign in again with your new credentials.",
+                variant: 'default',
+            })
+            signOut()
+        } catch (error) {
+            const axiosError = error as AxiosError<ApiResponse>;
+            toast({
+                title: 'Error',
+                description:
+                    axiosError.response?.data.message ?? 'Failed to update username',
+                variant: 'destructive',
+            })
+        } finally {
+            setIsUsernameSubmitting(false)
+        }
+    }
+
+    const passwordForm = useForm<z.infer<typeof resetPasswordSchema>>({
+        resolver: zodResolver(resetPasswordSchema),
+        defaultValues: {
+            oldPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+        }
+    })
+
+    const onPasswordSubmit = async (data: z.infer<typeof resetPasswordSchema>) => {
+        const oldPassword = data.oldPassword
+        const newPassword = data.newPassword
+        setIsPasswordSumitting(true)
+        try {
+            const response = await axios.post('/api/update-password', {
+                oldPassword,
+                newPassword,
+                username: user?.username
+            })
+            toast({
+                title: response.data.message,
+                variant: 'default',
+            })
+            toast({
+                title: "Please sign in again with your new credentials.",
+                variant: 'default',
+            })
+            signOut()
+        } catch (error) {
+            const axiosError = error as AxiosError<ApiResponse>;
+            toast({
+                title: 'Error',
+                description:
+                    axiosError.response?.data.message ?? 'Failed to update password',
+                variant: 'destructive',
+            })
+        } finally {
+            setIsPasswordSumitting(false)
+        }
+    }
 
     return (
         <div className="flex flex-col items-center mt-28 gap-y-5">
@@ -94,12 +164,12 @@ function ProfilePage() {
                                 Change your username here. After saving, you'll be logged out.
                             </CardDescription>
                         </CardHeader>
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onUsernameSubmit)}>
+                        <Form {...usernameForm}>
+                            <form onSubmit={usernameForm.handleSubmit(onUsernameSubmit)}>
                                 <CardContent className="space-y-2">
                                     <FormField
                                         name="username"
-                                        control={form.control}
+                                        control={usernameForm.control}
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Username</FormLabel>
@@ -124,7 +194,16 @@ function ProfilePage() {
                                     />
                                 </CardContent>
                                 <CardFooter>
-                                    <Button type="submit">Save Changes</Button>
+                                    <Button type="submit">
+                                        {isUsernameSubmitting ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Saving Changes
+                                            </>
+                                        ) : (
+                                            'Save Changes'
+                                        )}
+                                    </Button>
                                 </CardFooter>
                             </form>
                         </Form>
@@ -138,24 +217,62 @@ function ProfilePage() {
                                 Change your password here. After saving, you'll be logged out.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-2">
-                            <div className="space-y-1">
-                                <Label htmlFor="current">Current password</Label>
-                                <Input id="current" type="password" />
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="new">New password</Label>
-                                <Input id="new" type="password" />
-                            </div>
-                        </CardContent>
-                        <CardFooter>
-                            <Button>Save password</Button>
-                        </CardFooter>
+                        <Form {...passwordForm}>
+                            <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}>
+                                <CardContent className="space-y-2">
+                                    <FormField
+                                        name="oldPassword"
+                                        control={passwordForm.control}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Old Password</FormLabel>
+                                                <Input type="password" {...field} />
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        name="newPassword"
+                                        control={passwordForm.control}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>New Password</FormLabel>
+                                                <Input type="password" {...field} />
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        name="confirmPassword"
+                                        control={passwordForm.control}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Confirm Password</FormLabel>
+                                                <Input type="password" {...field} />
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </CardContent>
+                                <CardFooter>
+                                    <Button type="submit">
+                                        {isPasswordSubmitting ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Saving Changes
+                                            </>
+                                        ) : (
+                                            'Save Changes'
+                                        )}
+                                    </Button>
+                                </CardFooter>
+                            </form>
+                        </Form>
                     </Card>
                 </TabsContent>
             </Tabs>
         </div>
-    );
+    )
 }
 
-export default ProfilePage;
+export default ProfilePage

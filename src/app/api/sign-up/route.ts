@@ -1,6 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
-import brcrypt from "bcryptjs"
+import bcrypt from "bcryptjs"
 import { sendverificationEmail } from "@/helpers/sendVerificationEmail";
 
 export async function POST(request: Request) {
@@ -28,14 +28,14 @@ export async function POST(request: Request) {
                     message: "User already exists with this email"
                 }, {status: 400})
             } else {
-                const hashedPassword = await brcrypt.hash(password, 10)
+                const hashedPassword = await bcrypt.hash(password, 10)
                 existingUserByEmail.password = hashedPassword
                 existingUserByEmail.verificationCode = verificationCode
                 existingUserByEmail.verficationCodeExpiry = new Date(Date.now() + 3600000)
                 await existingUserByEmail.save()
             }
         } else {
-            const hashedPassword = await brcrypt.hash(password, 10)
+            const hashedPassword = await bcrypt.hash(password, 10)
             const expiryDate = new Date()
             expiryDate.setHours(expiryDate.getHours() + 1)
 
