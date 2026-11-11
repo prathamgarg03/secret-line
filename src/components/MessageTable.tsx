@@ -2,15 +2,21 @@ import React, { useState } from 'react'
 import { Message } from '@/model/User'
 import {
     ColumnDef,
-    flexRender,
-    getCoreRowModel,
-    useReactTable,
-    getPaginationRowModel,
-    SortingState,
-    getSortedRowModel,
     ColumnFiltersState,
-    getFilteredRowModel,
-    Row,
+    PaginationState,
+    SortingState,
+    columnFilteringFeature,
+    createFilteredRowModel,
+    createPaginatedRowModel,
+    createSortedRowModel,
+    filterFn_includesString,
+    flexRender,
+    rowPaginationFeature,
+    rowSelectionFeature,
+    rowSortingFeature,
+    sortFn_alphanumeric,
+    tableFeatures,
+    useTable,
 } from "@tanstack/react-table"
 import {
     Table,
@@ -32,6 +38,18 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from './ui/input'
 
+const features = tableFeatures({
+    columnFilteringFeature,
+    rowSortingFeature,
+    rowPaginationFeature,
+    rowSelectionFeature,
+    filteredRowModel: createFilteredRowModel(),
+    sortedRowModel: createSortedRowModel(),
+    paginatedRowModel: createPaginatedRowModel(),
+    filterFns: { includesString: filterFn_includesString },
+    sortFns: { alphanumeric: sortFn_alphanumeric },
+})
+
 type MessageTableProp = {
     data: Message[]
     onMessageDelete: (messageId: string) => void
@@ -39,15 +57,17 @@ type MessageTableProp = {
 
 function MessageTable({ data, onMessageDelete }: MessageTableProp) {
     const [sorting, setSorting] = useState<SortingState>([])
-    const [pagination, setPagination] = useState({
+    const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: 0,
         pageSize: 5,
     });
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
-    const columns: ColumnDef<Message>[] = [
+    const columns: ColumnDef<typeof features, Message>[] = [
         {
             accessorKey: "content",
+            filterFn: "includesString",
+            sortFn: "alphanumeric",
             header: ({ column }) => {
                 return (
                     <Button
@@ -62,6 +82,7 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
         },
         {
             accessorKey: "createdAt",
+            sortFn: "alphanumeric",
             header: ({ column }) => {
                 return (
                     <div className='text-right'>
@@ -90,7 +111,7 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
             }
         },
         {
-            accessorKey: "actions",
+            id: "actions",
             header: "",
             cell: ({ row }) => {
                 const message = row.original
@@ -117,15 +138,12 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
         }
     ]
 
-    const table = useReactTable({
+    const table = useTable({
+        features,
         data,
         columns,
-        getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,
-        getSortedRowModel: getSortedRowModel(),
         onColumnFiltersChange: setColumnFilters,
-        getFilteredRowModel: getFilteredRowModel(),
         onPaginationChange: setPagination,
         state: {
             sorting,
@@ -173,7 +191,7 @@ function MessageTable({ data, onMessageDelete }: MessageTableProp) {
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
                                 >
-                                    {row.getVisibleCells().map((cell) => (
+                                    {row.getAllCells().map((cell) => (
                                         <TableCell key={cell.id}>
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </TableCell>

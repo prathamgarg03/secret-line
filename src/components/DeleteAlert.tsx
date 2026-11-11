@@ -33,7 +33,7 @@ export function Alert({ message, onMessageDelete }: DeleteAlertProp) {
         toast({
           title: response.data.message
         })
-        const messageId = message._id as string
+        const messageId = String(message._id)
         onMessageDelete(messageId)
       }
     } catch (error) {

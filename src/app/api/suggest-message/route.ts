@@ -4,11 +4,11 @@ import { streamText } from 'ai';
 export async function POST(request: Request) {
   const { prompt }: { prompt: string } = await request.json();
   try {
-    const text = await streamText({
-      model: google('models/gemini-pro'),
+    const result = streamText({
+      model: google('gemini-2.5-flash'),
       prompt: prompt,
     })
-    return text.toAIStreamResponse()
+    return result.toTextStreamResponse()
   } catch (error) {
     console.log("AI error: ", error)
     return Response.json({

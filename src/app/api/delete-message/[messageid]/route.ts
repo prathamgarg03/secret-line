@@ -7,8 +7,8 @@ import mongoose from "mongoose";
 import { Message } from "@/model/User";
 
 export async function DELETE(request: Request, {params}: 
-{params: {messageid: string}}) {
-    const messageId = params.messageid
+{params: Promise<{messageid: string}>}) {
+    const { messageid: messageId } = await params
     await dbConnect()
 
     const session = await getServerSession(authOptions)
