@@ -1,75 +1,134 @@
 'use client';
-import React from 'react';
+
+import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { User } from 'next-auth';
-import { Button } from './ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LayoutDashboard, LogIn, LogOut, User2 } from 'lucide-react';
+import type { User } from 'next-auth';
+import { motion, useMotionValueEvent, useScroll } from 'motion/react';
+import { LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
+import { Logo } from '@/components/Logo';
+import { spring } from '@/lib/motion';
+import { cn } from '@/lib/utils';
+
+const navLinks = [
+    { href: '/dashboard', label: 'Inbox' },
+    { href: '/profile', label: 'Settings' },
+];
+
 function Navbar() {
-    const { data: session } = useSession();
-    const user: User = session?.user as User;
+    const { data: session, status } = useSession();
+    const user = session?.user as User | undefined;
+    const pathname = usePathname();
+    const [hovered, setHovered] = useState<string | null>(null);
+
+    // The bottom hairline only appears once the page scrolls under the bar.
+    const { scrollY } = useScroll();
+    const [scrolled, setScrolled] = useState(false);
+    useMotionValueEvent(scrollY, 'change', (y) => setScrolled(y > 4));
 
     return (
-        <nav className='fixed top-0 left-0 right-0 py-6 px-1 md:p-6 bg-white shadow-md z-50'>
-            <div className='container mx-auto flex flex-row justify-between items-center'>
-                <div className='text-2xl font-extrabold text-gray-800'>
-                    Secret Line
+        <header
+            className={cn(
+                'sticky top-0 z-40 border-b transition-[background-color,border-color,backdrop-filter] duration-300',
+                scrolled ? 'border-border bg-background/75 backdrop-blur-xl' : 'border-transparent bg-transparent'
+            )}
+        >
+            <nav className="container flex h-16 items-center justify-between gap-6">
+                <div className="flex items-center gap-8">
+                    <Logo href={session ? '/dashboard' : '/'} />
+                    {session && (
+                        <ul className="hidden items-center sm:flex" onMouseLeave={() => setHovered(null)}>
+                            {navLinks.map((link) => {
+                                const active = pathname.startsWith(link.href);
+                                return (
+                                    <li key={link.href} className="relative">
+                                        <Link
+                                            href={link.href}
+                                            onMouseEnter={() => setHovered(link.href)}
+                                            className={cn(
+                                                'relative z-10 block px-3 py-1.5 text-sm transition-colors duration-200 focus-visible:outline-hidden',
+                                                active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+                                            )}
+                                        >
+                                            {link.label}
+                                        </Link>
+                                        {hovered === link.href && (
+                                            <motion.span
+                                                layoutId="nav-hover"
+                                                className="absolute inset-0 rounded-md bg-zinc-100"
+                                                transition={spring}
+                                            />
+                                        )}
+                                        {active && (
+                                            <motion.span
+                                                layoutId="nav-active"
+                                                className="absolute inset-x-3 -bottom-[17px] h-px bg-foreground"
+                                                transition={spring}
+                                            />
+                                        )}
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    )}
                 </div>
-                <div>
-                    {session ? (
+
+                <div className="flex items-center gap-1.5">
+                    {status === 'loading' ? (
+                        <div className="size-8 animate-pulse rounded-full bg-zinc-100" />
+                    ) : session ? (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Avatar className='cursor-pointer'>
-                                    <AvatarFallback>
-                                        <User2 className="h-4 w-4" />
-                                    </AvatarFallback>
-                                </Avatar>
+                                <button
+                                    aria-label="Account menu"
+                                    className="flex size-8 items-center justify-center rounded-full border bg-card text-[13px] font-medium shadow-[var(--shadow-hairline)] transition-colors hover:border-zinc-300 focus-visible:outline-hidden focus-visible:ring-4 focus-visible:ring-iris/15"
+                                >
+                                    {user?.username?.charAt(0).toUpperCase()}
+                                </button>
                             </DropdownMenuTrigger>
-
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                    <Link href='/profile' className='p-0 m-0'>
-                                        <Button variant="ghost" className='p-0 m-0'>
-                                            <User2 className="h-4 w-4 p-0 m-0 mr-2" />
-                                            Profile
-                                        </Button>
-                                    </Link>
+                            <DropdownMenuContent align="end" sideOffset={8} className="w-52 rounded-xl p-1 shadow-[var(--shadow-float)]">
+                                <DropdownMenuLabel className="px-2.5 py-2 font-normal">
+                                    <p className="text-xs text-muted-foreground">Signed in as</p>
+                                    <p className="truncate text-sm font-medium">@{user?.username}</p>
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild className="cursor-pointer rounded-md px-2.5 sm:hidden">
+                                    <Link href="/dashboard">Inbox</Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <Link href='/dashboard' className='p-0 m-0'>
-                                        <Button variant="ghost" className='p-0 m-0'>
-                                            <LayoutDashboard className="h-4 w-4 p-0 m-0 mr-2" />
-                                            Dashboard
-                                        </Button>
-                                    </Link>
+                                <DropdownMenuItem asChild className="cursor-pointer rounded-md px-2.5 sm:hidden">
+                                    <Link href="/profile">Settings</Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <Button variant="ghost" className='p-0 m-0' onClick={() => signOut()}>
-                                        <LogOut className="h-4 w-4 p-0 m-0 mr-2" />
-                                        Sign Out
-                                    </Button>
+                                <DropdownMenuItem
+                                    className="cursor-pointer gap-2 rounded-md px-2.5 text-muted-foreground"
+                                    onSelect={() => signOut({ callbackUrl: '/' })}
+                                >
+                                    <LogOut className="size-4" /> Sign out
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-
                     ) : (
-                        <Link href='/sign-in'>
-                            <Button className='rounded-full'>
-                                Sign In
+                        <>
+                            <Button asChild variant="ghost" size="sm">
+                                <Link href="/sign-in">Sign in</Link>
                             </Button>
-                        </Link>
+                            <Button asChild size="sm">
+                                <Link href="/sign-up">Get your link</Link>
+                            </Button>
+                        </>
                     )}
                 </div>
-            </div>
-        </nav>
+            </nav>
+        </header>
     );
 }
 
