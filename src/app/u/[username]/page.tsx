@@ -2,7 +2,7 @@
 import axios, { AxiosError } from 'axios'
 import { useParams } from 'next/navigation'
 import { useState } from 'react'
-import { useCompletion } from 'ai/react';
+import { useCompletion } from '@ai-sdk/react';
 import { Button } from '@/components/ui/button'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -60,7 +60,8 @@ const SendMessage = () => {
 
   const { completion, complete, isLoading: isSuggestionLoading, error } = useCompletion({
     api: '/api/suggest-message',
-    initialCompletion: initialMessageString
+    initialCompletion: initialMessageString,
+    streamProtocol: 'text'
   });
 
   const suggestMessages = async () => {

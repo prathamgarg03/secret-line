@@ -34,7 +34,7 @@ function Dashboard() {
     setIsSwitchLoading(true);
     try {
       const response = await axios.get<ApiResponse>('/api/accept-message');
-      setValue('acceptMessage', response.data.isAcceptingMessage);
+      setValue('acceptMessage', response.data.isAcceptingMessage ?? false);
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
       toast({
@@ -106,7 +106,7 @@ function Dashboard() {
   };
 
   const handleDeleteMessage = (messageId: string) => {
-    setMessages(messages.filter((message) => message._id !== messageId));
+    setMessages(messages.filter((message) => String(message._id) !== messageId));
   };
 
   const copyToClipboard = () => {
@@ -133,7 +133,7 @@ function Dashboard() {
             type="text"
             value={profileUrl}
             disabled
-            className="input input-bordered w-full p-3 rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="input input-bordered w-full p-3 rounded-md bg-white shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           />
           <Button onClick={copyToClipboard} className="rounded-md px-4 py-2">
             Copy

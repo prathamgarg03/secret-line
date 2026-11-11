@@ -17,7 +17,7 @@ import {
     TabsTrigger,
 } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
-import { User } from "@/model/User";
+import type { User } from "next-auth";
 import { resetPasswordSchema, usernameSchema } from "@/schemas/signUpSchema";
 import { ApiResponse } from "@/types/ApiResponse";
 import { zodResolver } from "@hookform/resolvers/zod";
