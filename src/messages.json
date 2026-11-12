@@ -1,17 +1,20 @@
 [
-    {
-      "title": "Message from User123",
-      "content": "Hey, how are you doing today?",
-      "received": "10 minutes ago"
-    },
-    {
-      "title": "Message from SecretAdmirer",
-      "content": "I really liked your recent post!",
-      "received": "2 hours ago"
-    },
-    {
-      "title": "Message from MysteryGuest",
-      "content": "Do you have any book recommendations?",
-      "received": "1 day ago"
-    }
-  ]
+  {
+    "content": "Your presentation on Friday was genuinely the best one. You should do more of those."
+  },
+  {
+    "content": "Honest question: where do you find all your music? Your playlists are elite."
+  },
+  {
+    "content": "I've wanted to say thanks for helping me move last spring. It meant a lot."
+  },
+  {
+    "content": "You talk over people in meetings sometimes. Small thing, but worth knowing."
+  },
+  {
+    "content": "What book should I read next? You always have good picks."
+  },
+  {
+    "content": "The way you handled that argument at dinner was really kind."
+  }
+]

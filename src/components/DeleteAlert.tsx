@@ -1,8 +1,11 @@
 'use client';
 
+import { useState } from 'react';
+import axios, { AxiosError } from 'axios';
+import { toast } from 'sonner';
+import { Trash2 } from 'lucide-react';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -10,63 +13,69 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Button } from "./ui/button"
-import { MoreHorizontal, Trash2 } from "lucide-react"
-import { Message } from "@/model/User"
-import { useToast } from "./ui/use-toast"
-import axios, { AxiosError } from "axios"
-import { ApiResponse } from "@/types/ApiResponse"
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { SubmitButton } from '@/components/SubmitButton';
+import { Message } from '@/model/User';
+import { ApiResponse } from '@/types/ApiResponse';
 
 type DeleteAlertProp = {
-  message: Message
-  onMessageDelete: (messageId: string) => void
-}
+  message: Message;
+  onMessageDelete: (messageId: string) => void;
+};
 
-export function Alert({ message, onMessageDelete }: DeleteAlertProp) {
+export function DeleteAlert({ message, onMessageDelete }: DeleteAlertProp) {
+  const [open, setOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const { toast } = useToast()
   const deleteMessage = async () => {
+    setIsDeleting(true);
     try {
-      if (message) {
-        const response = await axios.delete<ApiResponse>(`/api/delete-message/${message._id}`)
-        toast({
-          title: response.data.message
-        })
-        const messageId = String(message._id)
-        onMessageDelete(messageId)
-      }
+      await axios.delete<ApiResponse>(`/api/delete-message/${message._id}`);
+      setOpen(false);
+      toast.success('Note deleted');
+      // Let the dialog close before the card animates out.
+      setTimeout(() => onMessageDelete(String(message._id)), 180);
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
-      toast({
-        title: 'Error',
-        description:
-          axiosError.response?.data.message ?? 'Failed to delete message',
-        variant: 'destructive',
-      });
+      toast.error(axiosError.response?.data.message ?? 'Couldn’t delete this note. Try again.');
+    } finally {
+      setIsDeleting(false);
     }
-  }
+  };
 
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost" className="p-0 w-full">
-          Delete
-        </Button>
-      </AlertDialogTrigger>
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Delete note" className="size-7 rounded-md hover:text-destructive">
+              <Trash2 className="!size-3.5" />
+            </Button>
+          </AlertDialogTrigger>
+        </TooltipTrigger>
+        <TooltipContent>Delete</TooltipContent>
+      </Tooltip>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the message from our servers.
+          <AlertDialogTitle>Delete this note?</AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div className="space-y-4">
+              <p>It will be removed from your inbox for good.</p>
+              <blockquote className="line-clamp-3 rounded-xl border bg-zinc-50 px-4 py-3 text-[15px] leading-relaxed text-foreground">
+                {message.content}
+              </blockquote>
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={deleteMessage}>Continue</AlertDialogAction>
+        <AlertDialogFooter className="gap-2">
+          <AlertDialogCancel disabled={isDeleting}>Keep it</AlertDialogCancel>
+          <SubmitButton type="button" variant="destructive" pending={isDeleting} pendingLabel="Deleting" onClick={deleteMessage}>
+            Delete note
+          </SubmitButton>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  )
+  );
 }
-

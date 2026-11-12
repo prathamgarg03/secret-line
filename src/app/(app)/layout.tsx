@@ -1,18 +1,17 @@
 import Navbar from '@/components/Navbar';
 
-interface RootLayoutProps {
+interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-export default async function RootLayout({ children }: RootLayoutProps) {
+export default function AppLayout({ children }: AppLayoutProps) {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-dvh flex-col">
       <Navbar />
-      <main className='flex-1 mt-32 sm:mt-16 overflow-hidden'>
-      {children}
-      </main>
-      <footer className="w-full text-center py-4 bg-gray-100 mt-16">
-        <p className="text-sm text-gray-500">© 2024 Secret Line. All rights reserved.</p>
+      <main className="flex-1">{children}</main>
+      <footer className="container flex flex-col items-center justify-between gap-2 py-8 text-[13px] text-muted-foreground sm:flex-row">
+        <span>© {new Date().getFullYear()} Secret Line</span>
+        <span>Every note stays anonymous.</span>
       </footer>
     </div>
   );
