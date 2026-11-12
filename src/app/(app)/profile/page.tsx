@@ -72,7 +72,11 @@ function ProfilePage() {
 
     const passwordForm = useForm<z.infer<typeof resetPasswordSchema>>({
         resolver: zodResolver(resetPasswordSchema),
-        defaultValues: { oldPassword: '', newPassword: '', confirmPassword: '' },
+        defaultValues: {
+            oldPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+        },
     });
 
     const onUsernameSubmit = async (data: z.infer<typeof usernameSchema>) => {
